@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net - Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Animals validation
+    function isValidAnimal(data) {
+      return data.keys().hasAll(['ownerId', 'tagNumber', 'species', 'healthStatus']) &&
+             data.ownerId is string && data.ownerId == request.auth.uid &&
+             data.tagNumber is string && data.tagNumber.size() <= 64 &&
+             data.species is string && data.species.size() <= 32 &&
+             data.healthStatus is string && data.healthStatus.size() <= 32;
+    }
+
+    match /animals/{animalId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(animalId) && isValidAnimal(incoming());
+      allow update: if isSignedIn() && isValidId(animalId) && isValidAnimal(incoming()) &&
+                       incoming().ownerId == existing().ownerId;
+      allow delete: if isSignedIn() && isValidId(animalId) && resource.data.ownerId == request.auth.uid;
+    }
+
+    // HealthReports validation
+    function isValidHealthReport(data) {
+      return data.keys().hasAll(['ownerId', 'animalTag', 'category', 'severity']) &&
+             data.ownerId is string && data.ownerId == request.auth.uid &&
+             data.animalTag is string && data.animalTag.size() <= 64 &&
+             data.category is string && data.category.size() <= 64 &&
+             data.severity is string && data.severity.size() <= 32;
+    }
+
+    match /healthReports/{reportId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(reportId) && isValidHealthReport(incoming());
+      allow update: if isSignedIn() && isValidId(reportId) && isValidHealthReport(incoming()) &&
+                       incoming().ownerId == existing().ownerId;
+      allow delete: if isSignedIn() && isValidId(reportId) && resource.data.ownerId == request.auth.uid;
+    }
+
+    // SensorAlerts validation
+    function isValidSensorAlert(data) {
+      return data.keys().hasAll(['ownerId', 'animalTag', 'metric', 'flaggedIssue', 'status']) &&
+             data.ownerId is string && data.ownerId == request.auth.uid &&
+             data.animalTag is string && data.animalTag.size() <= 64 &&
+             data.metric is string && data.metric.size() <= 64 &&
+             data.flaggedIssue is string && data.flaggedIssue.size() <= 256 &&
+             data.status is string && data.status.size() <= 32;
+    }
+
+    match /sensorAlerts/{alertId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(alertId) && isValidSensorAlert(incoming());
+      allow update: if isSignedIn() && isValidId(alertId) && isValidSensorAlert(incoming()) &&
+                       incoming().ownerId == existing().ownerId;
+      allow delete: if isSignedIn() && isValidId(alertId) && resource.data.ownerId == request.auth.uid;
+    }
+
+    // OutbreakWatches validation
+    function isValidOutbreakWatch(data) {
+      return data.keys().hasAll(['ownerId', 'diseaseName', 'alertLevel']) &&
+             data.ownerId is string && data.ownerId == request.auth.uid &&
+             data.diseaseName is string && data.diseaseName.size() <= 128 &&
+             data.alertLevel is string && data.alertLevel.size() <= 32;
+    }
+
+    match /outbreakWatches/{watchId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(watchId) && isValidOutbreakWatch(incoming());
+      allow update: if isSignedIn() && isValidId(watchId) && isValidOutbreakWatch(incoming()) &&
+                       incoming().ownerId == existing().ownerId;
+      allow delete: if isSignedIn() && isValidId(watchId) && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Connection test document
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

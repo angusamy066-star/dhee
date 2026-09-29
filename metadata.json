@@ -1,0 +1,6 @@
+{
+  "name": "BoviPulse - Livestock Disease & Animal Health Detection",
+  "description": "AI-powered livestock disease surveillance, early behavioral sensor triage, multimodal lesion diagnostics, and biosecurity intelligence platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

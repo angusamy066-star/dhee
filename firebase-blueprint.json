@@ -1,0 +1,103 @@
+{
+  "entities": {
+    "animal": {
+      "title": "Animal",
+      "description": "Livestock record representing an individual animal or batch in the herd",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "tagNumber": { "type": "string", "maxLength": 64 },
+        "species": { "type": "string", "maxLength": 32, "enum": ["cattle", "swine", "poultry", "sheep", "goat", "other"] },
+        "breed": { "type": "string", "maxLength": 64 },
+        "ageMonths": { "type": "number" },
+        "penOrPasture": { "type": "string", "maxLength": 64 },
+        "healthStatus": { "type": "string", "maxLength": 32, "enum": ["healthy", "monitoring", "quarantine", "critical"] },
+        "lastCheckup": { "type": "string", "maxLength": 64 },
+        "temperature": { "type": "number" },
+        "ruminationMinutes": { "type": "number" },
+        "feedIntakePercent": { "type": "number" },
+        "activityIndex": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "tagNumber", "species", "healthStatus"]
+    },
+    "healthReport": {
+      "title": "HealthReport",
+      "description": "Veterinary clinical assessment or AI diagnostic report",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "animalTag": { "type": "string", "maxLength": 64 },
+        "species": { "type": "string", "maxLength": 32 },
+        "category": { "type": "string", "maxLength": 64 },
+        "symptoms": { "type": "string", "maxLength": 1000 },
+        "severity": { "type": "string", "maxLength": 32, "enum": ["low", "moderate", "high", "critical"] },
+        "suspectedDiseases": { "type": "string", "maxLength": 1000 },
+        "differentialDiagnosis": { "type": "string", "maxLength": 4000 },
+        "biosecurityAdvice": { "type": "string", "maxLength": 4000 },
+        "treatmentGuidance": { "type": "string", "maxLength": 4000 },
+        "zoonoticRisk": { "type": "string", "maxLength": 32 },
+        "imageUrl": { "type": "string", "maxLength": 2048 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "animalTag", "category", "severity"]
+    },
+    "sensorAlert": {
+      "title": "SensorAlert",
+      "description": "Deviations flagged by wearable ear tags, collars, or camera vision",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "animalTag": { "type": "string", "maxLength": 64 },
+        "sensorType": { "type": "string", "maxLength": 64 },
+        "metric": { "type": "string", "maxLength": 64 },
+        "currentValue": { "type": "number" },
+        "baselineValue": { "type": "number" },
+        "deviationPercent": { "type": "number" },
+        "flaggedIssue": { "type": "string", "maxLength": 256 },
+        "leadTimeHours": { "type": "number" },
+        "status": { "type": "string", "maxLength": 32, "enum": ["new", "acknowledged", "resolved"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "animalTag", "metric", "flaggedIssue", "status"]
+    },
+    "outbreakWatch": {
+      "title": "OutbreakWatch",
+      "description": "Tracked regional or global livestock disease alert with search grounding",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "diseaseName": { "type": "string", "maxLength": 128 },
+        "region": { "type": "string", "maxLength": 128 },
+        "alertLevel": { "type": "string", "maxLength": 32 },
+        "summary": { "type": "string", "maxLength": 2000 },
+        "preventativeProtocol": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "diseaseName", "alertLevel"]
+    }
+  },
+  "firestore": {
+    "/animals/{animalId}": {
+      "schema": { "$ref": "#/entities/animal" },
+      "description": "Herd animals tracked by farm user"
+    },
+    "/healthReports/{reportId}": {
+      "schema": { "$ref": "#/entities/healthReport" },
+      "description": "Veterinary clinical and AI diagnostic records"
+    },
+    "/sensorAlerts/{alertId}": {
+      "schema": { "$ref": "#/entities/sensorAlert" },
+      "description": "Early anomaly alerts from collars, ear tags, and feed-bunk sensors"
+    },
+    "/outbreakWatches/{watchId}": {
+      "schema": { "$ref": "#/entities/outbreakWatch" },
+      "description": "Monitored disease outbreaks and epidemiological alerts"
+    }
+  }
+}
